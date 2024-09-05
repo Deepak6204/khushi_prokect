@@ -9,6 +9,10 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/:roomId', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
+
 // Set up Socket.IO
 io.on('connection', (socket) => {
   console.log('a user connected');
@@ -17,7 +21,7 @@ io.on('connection', (socket) => {
   socket.on('joinRoom', (roomId) => {
     console.log(`user joined room ${roomId}`);
     socket.join(roomId);
-    socket.emit('requestUsername'); // Request the user's name
+    socket.emit('requestUsername',roomId); // Request the user's name
     // socket.broadcast.to(roomId).emit('newUserJoined', `A new user has joined the room!`);
   });
 

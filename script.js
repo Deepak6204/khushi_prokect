@@ -2,6 +2,19 @@ const socket = io();
 
 const promptElement = document.getElementById('prompt');
 
+const roomIdDisplay = document.getElementById('room-id-display');
+
+const urlParams = new URLSearchParams(window.location.search);
+const roomId = urlParams.get('roomId');
+if (roomId) {
+  roomIdDisplay.innerText = `${roomId}`;
+}
+
+if (roomId) {
+  socket.emit('joinRoom', roomId);
+  // Disable the join room button to prevent multiple joins
+}
+
 // Function to update the prompt's content and style
 function updatePrompt(message, type) {
   promptElement.textContent = message;
@@ -9,13 +22,18 @@ function updatePrompt(message, type) {
   setTimeout(() => {
     promptElement.textContent = '';
     promptElement.className = 'prompt';
-  }, 3000); // hide the prompt after 3 seconds
+  }, 3000); 
 }
 
-    // Get the username from the user
     let username;
-    socket.on('requestUsername', () => {
-      username = prompt('Please enter your name:');
+    socket.on('requestUsername', (roomId) => {
+      while(!username) {
+        username = prompt('Please enter your name:');
+        if (!username) {
+          alert('Username cannot be empty. Please try again.');
+        }
+      }
+      roomIdDisplay.innerText = roomId;
       socket.emit('submitUsername', username);
     });
 
@@ -94,4 +112,17 @@ function updatePrompt(message, type) {
           document.body.classList.remove('dark-theme');
           themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
         }
+      });
+      const shareRoomButton = document.getElementById('share-room');
+      shareRoomButton.addEventListener('click', () => {
+        const roomId = roomIdDisplay.innerText;
+        console.log(roomId)
+        const roomUrl = `${window.location.origin}?roomId=${roomId}`;
+        const shareLink = document.createElement('textarea');
+        shareLink.value = roomUrl;
+        document.body.appendChild(shareLink);
+        shareLink.select();
+        document.execCommand('copy');
+        document.body.removeChild(shareLink);
+        alert(`Room link copied to clipboard: ${roomUrl}`);
       });
