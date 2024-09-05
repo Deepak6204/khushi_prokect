@@ -1,5 +1,17 @@
 const socket = io();
 
+const promptElement = document.getElementById('prompt');
+
+// Function to update the prompt's content and style
+function updatePrompt(message, type) {
+  promptElement.textContent = message;
+  promptElement.className = `prompt ${type}`;
+  setTimeout(() => {
+    promptElement.textContent = '';
+    promptElement.className = 'prompt';
+  }, 3000); // hide the prompt after 3 seconds
+}
+
     // Get the username from the user
     let username;
     socket.on('requestUsername', () => {
@@ -36,6 +48,25 @@ const socket = io();
       messageElement.innerText = `${senderUsername}: ${message}`;
       chatLog.appendChild(messageElement);
       chatLog.scrollTop = chatLog.scrollHeight;
+    });
+
+    // Listen for new user joined event
+    socket.on('newUserJoined', (message) => {
+      console.log(message);
+      updatePrompt(message, 'join');
+      setTimeout(() => {
+        promptElement.innerText = '';
+      }, 3000);
+    });
+
+    // Listen for user left event
+    socket.on('userLeft', (message) => {
+      console.log(message);
+      updatePrompt(message, 'leave');
+      // Hide the prompt after a few seconds
+      setTimeout(() => {
+        promptElement.innerText = '';
+      }, 3000);
     });
 
     socket.on('onlineUsers', (users) => {

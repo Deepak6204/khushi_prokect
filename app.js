@@ -18,6 +18,7 @@ io.on('connection', (socket) => {
     console.log(`user joined room ${roomId}`);
     socket.join(roomId);
     socket.emit('requestUsername'); // Request the user's name
+    // socket.broadcast.to(roomId).emit('newUserJoined', `A new user has joined the room!`);
   });
 
   // Handle incoming messages
@@ -39,6 +40,7 @@ io.on('connection', (socket) => {
       }
       onlineUsers[roomId].push({ id: socket.id, username: socket.username });
       io.to(roomId).emit('onlineUsers', onlineUsers[roomId]);
+      socket.broadcast.to(roomId).emit('newUserJoined', `${username} has joined the room!`);
     }
   });
 
@@ -47,11 +49,13 @@ io.on('connection', (socket) => {
     console.log(`user left room ${roomId}`);
     socket.leave(roomId);
 
+    socket.broadcast.to(roomId).emit('userLeft', `${socket.username} has left the room!`);
     // Remove the user from the online users list
     if (onlineUsers[roomId]) {
       onlineUsers[roomId] = onlineUsers[roomId].filter((user) => user.id !== socket.id);
       io.to(roomId).emit('onlineUsers', onlineUsers[roomId]);
     }
+    socket.emit('onlineUsers',[]);
   });
 
   // Handle disconnections
